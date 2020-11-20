@@ -1,0 +1,20 @@
+{
+  "name": "portal-core-ui",
+  "version": "0.0.2",
+  "peerDependencies": {
+    "@angular/common": "^9.1.12",
+    "@angular/core": "^9.1.12",
+
+    "@thi.ng/hiccup": "^3.5.8",
+    "@turf/bbox-polygon": "^6.0.1",
+    "@turf/boolean-point-in-polygon": "^6.0.1",
+    "@turf/helpers": "^6.1.4",
+    "@types/jquery": "^3.5.1",
+    "jquery": "^3.5.1",
+    "ol": "^6.4.3",
+    "ol-geocoder": "^4.0.0"
+  },
+  "dependencies": {
+    "tslib": "^1.10.0"
+  }
+}

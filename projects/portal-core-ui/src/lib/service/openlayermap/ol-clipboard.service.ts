@@ -1,5 +1,5 @@
-import {Injectable, Inject} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import * as olProj from 'ol/proj';
 import { OlMapObject } from './ol-map-object';
 import olLayerVector from 'ol/layer/Vector';
@@ -63,10 +63,11 @@ export class OlClipboardService {
     '</gml:MultiPolygon>';
     return geometry;
   }
+
   /**
-  * Method for drawing a polygon on the map.
-  * @returns the polygon coordinates string BS on which the polygon is drawn on.
-  */
+   * Method for drawing a polygon on the map.
+   * @returns the polygon coordinates string BS on which the polygon is drawn on.
+   */
   public drawPolygon() {
     this.olMapObject.drawPolygon().subscribe(
         (vector) => {
@@ -135,10 +136,10 @@ export class OlClipboardService {
 }
 
 export interface Polygon {
-  name: string,
-  srs: string,
-  geometryType: string,
-  coordinates: string,
-  raw?: string,
-  olvector?: olLayerVector
+  name: string;
+  srs: string;
+  geometryType: string;
+  coordinates: string;
+  raw?: string;
+  olvector?: olLayerVector;
 }
