@@ -1,6 +1,12 @@
 {
   "name": "portal-core-ui",
-  "version": "0.0.2",
+  "version": "1.0.2",
+  "license" : "(LGPL OR Apache-2.0)",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/AuScope/portal-core-ui-app.git"
+  },
+  "homepage": "https://github.com/AuScope/portal-core-ui-app",
   "peerDependencies": {
     "@angular/common": "^9.1.12",
     "@angular/core": "^9.1.12",

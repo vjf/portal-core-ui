@@ -9,15 +9,14 @@ Shared portal UI components written in Angular 9. This project is a workspace fo
 or
 `yarn install`
 
-
 ### Build the library
 
 `ng build portal-core-ui`
 
-
 ### Create a link to the library
-```
-cd dist\portal-core-ui
+
+``` bash
+cd dist/portal-core-ui
 npm link
 ```
 
@@ -51,19 +50,21 @@ With some modifications to the public-api.ts we can re-include the paths if nece
 ### Packaging asset files
 
 Add the files to the "assets" list in the file portal-core-ui/ng-package.json, e.g:
-```
+
+``` json
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../dist/portal-core-ui",
   "assets": [
     "./src/lib/widget/chart/rickshaw/rickshaw.service.scss",
-	"./src/lib/mycompdir/my.component.scss"
+  "./src/lib/mycompdir/my.component.scss"
   ],
   "lib": {
     "entryFile": "src/public-api.ts"
   }
 }
 ```
+
 Note that for development that this will place the asset under:
 
 `./node_modules/portal-core-ui/src/lib/<directory>`
@@ -72,7 +73,21 @@ Project paths that reference this asset will need to be updated to match.
 
 Note: I've yet to test where a deployed package puts these files, will update this file once we have a deployed version.
 
+### Deploying the package (Authorised Users)
 
-### Deploying the package
+Make sure you have incremented both the version number in both the project's package.json file as well as the library's package.json file.
 
-Coming soon...
+From the root project directory, build the library with:
+
+`ng build portal-core-ui --prod`
+
+Log into your NPM account with:
+
+`npm adduser`
+
+Change to the build directory and publish the library:
+
+``` bash
+cd dist/portal-core-ui
+npm publish
+```
