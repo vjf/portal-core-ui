@@ -9,6 +9,7 @@ declare var LZMA: any;
  * keeping track of the layers and its filter that have been added to the map
  * This also includes getting the current state of the ol map, its zoom and center.
  */
+// @dynamic
 @Injectable()
 export class ManageStateService {
 

@@ -9,6 +9,7 @@ declare var RenderControls: any;
  * Service class to handle rendering of rickshaw chart
  *
  */
+// @dynamic
 @Injectable()
 export class RickshawService {
 
