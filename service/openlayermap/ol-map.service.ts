@@ -19,7 +19,7 @@ import { OlMapObject } from './ol-map-object';
 import { OlWMSService } from '../wms/ol-wms.service';
 import { OlWWWService } from '../www/ol-www.service';
 
-
+import { MapsManagerService } from 'angular-cesium';
 
 /**
  * Wrapper class to provide all things related to the ol map such as adding layer or removing layer.
@@ -35,7 +35,7 @@ export class OlMapService {
 
    constructor(private layerHandlerService: LayerHandlerService, private olWMSService: OlWMSService,
      private olWFSService: OlWFSService, private olMapObject: OlMapObject, private manageStateService: ManageStateService, @Inject('conf') private conf,
-      private olCSWService: OlCSWService, private olWWWService: OlWWWService) {
+      private olCSWService: OlCSWService, private olWWWService: OlWWWService, private mapsManagerService: MapsManagerService) {
 
      this.olMapObject.registerClickHandler(this.mapClickHandler.bind(this));
      this.addLayerSubject = new Subject<LayerModel>();
@@ -118,13 +118,13 @@ export class OlMapService {
   public getCSWRecordsForExtent(extent: olExtent): CSWRecordModel[] {
     let intersectedCSWRecordList: CSWRecordModel[] = [];
     extent = olProj.transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
-    const activeLayers = this.olMapObject.getLayers();
+    const groupLayers = this.olMapObject.getLayers();
     const map = this.olMapObject.getMap();
     const mapLayerColl = map.getLayers();
     const me = this;
     mapLayerColl.forEach(function(layer) {
-       for (const layerId in activeLayers) {
-           for (const activeLayer of activeLayers[layerId]) {
+       for (const layerId in groupLayers) {
+           for (const activeLayer of groupLayers[layerId]) {
                if (layer === activeLayer) {
                    const layerModel = me.getLayerModel(layerId);
                    /*
@@ -257,7 +257,10 @@ export class OlMapService {
    * @param opacity the value of opacity between 0.0 and 1.0
    */
   public setLayerOpacity(layerId: string, opacity: number) {
-    this.olMapObject.setLayerOpacity(layerId, opacity);
+    const viewer = this.mapsManagerService.getMap().getCesiumViewer();
+    const imageLayer = viewer.imageryLayers.get(1)
+    imageLayer.alpha = opacity;
+    // this.olMapObject.setLayerOpacity(layerId, opacity);
   }
 
   /**
@@ -365,7 +368,7 @@ export class OlMapService {
    * @param baseMap the basemap's ID value (string)
    */
   public switchBaseMap(baseMap: string) {
-    this.olMapObject.switchBaseMap(baseMap);
+    // this.olMapObject.switchBaseMap(baseMap);
   }
 
 }
