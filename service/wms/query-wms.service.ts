@@ -24,9 +24,9 @@ export class QueryWMSService {
    */
   private useLocalTiles(layerName: string, clickCoord: number[]): [number, number, any, number] {
     const mapObj = this.olMapObject.getMap();
-    const view = mapObj.getView();
-    const viewResolution = view.getResolution();
-    const layers = this.olMapObject.getLayers();
+    // const view = mapObj.getView();
+    // const viewResolution = view.getResolution();
+    const layers = this.olMapObject.getLayerGroups();
 
     // Look for our layer
     for (const l in layers) {
@@ -35,21 +35,21 @@ export class QueryWMSService {
         const src =  layers[l][0].getSource();
         let tileGrid = src.getTileGrid();
         if (!tileGrid) {
-          const projectionObj = view.getProjection(Constants.MAP_PROJ);
-          tileGrid = src.getTileGridForProjection(projectionObj);
+          // const projectionObj = view.getProjection(Constants.MAP_PROJ);
+          // tileGrid = src.getTileGridForProjection(projectionObj);
         }
         // Fetch tile coordinates i.e. [zoom level, x-th tile in the x-direction, y-th tile in the y-direction]
-        const tileCoord = tileGrid.getTileCoordForCoordAndResolution(clickCoord, viewResolution);
+        // const tileCoord = tileGrid.getTileCoordForCoordAndResolution(clickCoord, viewResolution);
         // Fetch tile resolution, e.g. a number proportional to the number of metres the tile covers on map 
-        const tileResolution: number = tileGrid.getResolution(tileCoord[0]);
+        // const tileResolution: number = tileGrid.getResolution(tileCoord[0]);
         // Fetch tile bounding box as map coordinate
-        const tileExtent = tileGrid.getTileCoordExtent(tileCoord);
+        // const tileExtent = tileGrid.getTileCoordExtent(tileCoord);
         // Fetch tile size in pixels
-        const tileSize: number = tileGrid.getTileSize(tileCoord[0]);
+        // const tileSize: number = tileGrid.getTileSize(tileCoord[0]);
         // Calculate x,y coords within the tile (in pixels)
-        const x = Math.floor((clickCoord[0] - tileExtent[0]) / tileResolution);
-        const y = Math.floor((tileExtent[3] - clickCoord[1]) / tileResolution);
-        return [x, y, tileExtent, tileSize];
+        // const x = Math.floor((clickCoord[0] - tileExtent[0]) / tileResolution);
+        // const y = Math.floor((tileExtent[3] - clickCoord[1]) / tileResolution);
+        // return [x, y, tileExtent, tileSize];
       }
     }
     return [undefined, undefined, undefined, undefined]
@@ -87,14 +87,14 @@ export class QueryWMSService {
     } else {
       // Uses the whole screen as the image in the WMS 'GetFeatureInfo' request 
       const mapObj = this.olMapObject.getMap();
-      const bounds = mapObj.getView().calculateExtent();
-      const bbox = [bounds[2].toString(), bounds[3].toString(), bounds[0].toString(), bounds[1].toString()].toString();
-      const size = mapObj.getSize();
+      //const bounds = mapObj.getView().calculateExtent();
+      //const bbox = [bounds[2].toString(), bounds[3].toString(), bounds[0].toString(), bounds[1].toString()].toString();
+      //const size = mapObj.getSize();
       formdata = formdata.append('x', pixel[0]);
       formdata = formdata.append('y', pixel[1]);
-      formdata = formdata.append('BBOX', bbox);
-      formdata = formdata.append('WIDTH', size[0]);
-      formdata = formdata.append('HEIGHT', size[1]);
+      //formdata = formdata.append('BBOX', bbox);
+      //formdata = formdata.append('WIDTH', size[0]);
+      //formdata = formdata.append('HEIGHT', size[1]);
     }
     formdata = formdata.append('version', onlineResource.version);
 

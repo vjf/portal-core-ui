@@ -19,7 +19,7 @@ import { OlMapObject } from './ol-map-object';
 import { OlWMSService } from '../wms/ol-wms.service';
 import { OlWWWService } from '../www/ol-www.service';
 
-
+import { Map } from 'mapbox-gl';
 
 /**
  * Wrapper class to provide all things related to the ol map such as adding layer or removing layer.
@@ -31,13 +31,16 @@ export class OlMapService {
    private layerModelList: { [key: string]: LayerModel; } = {};
    private addLayerSubject: Subject<LayerModel>;
 
+  
+
    private clickedLayerListBS = new BehaviorSubject<any>({});
 
    constructor(private layerHandlerService: LayerHandlerService, private olWMSService: OlWMSService,
      private olWFSService: OlWFSService, private olMapObject: OlMapObject, private manageStateService: ManageStateService, @Inject('conf') private conf,
       private olCSWService: OlCSWService, private olWWWService: OlWWWService) {
 
-     this.olMapObject.registerClickHandler(this.mapClickHandler.bind(this));
+     //this.olMapObject.registerClickHandler(this.mapClickHandler.bind(this));
+     this.olMapObject.registerForEvent('Click', this.mapClickHandler.bind(this));
      this.addLayerSubject = new Subject<LayerModel>();
    }
 
@@ -50,27 +53,35 @@ export class OlMapService {
      return this.clickedLayerListBS;
    }
 
+   public setMap(map: Map) {
+     this.olMapObject.setMap(map);
+   }
+
    /**
     * Gets called when a map click event is recognised
     * @param pixel coordinates of clicked on pixel (units: pixels)
     */
-   public mapClickHandler(pixel: number[]) {
+   public mapClickHandler(pixel: any) {
+     console.log('pixel=', pixel);
       try {
            // Convert pixel coords to map coords
            const map = this.olMapObject.getMap();
-           const clickCoord = map.getCoordinateFromPixel(pixel);
-           const lonlat = olProj.transform(clickCoord, 'EPSG:3857', 'EPSG:4326');
-           const clickPoint = point(lonlat);
+
+           //const clickCoord = map.getCoordinateFromPixel(pixel);
+           //const lonlat = olProj.transform(clickCoord, 'EPSG:3857', 'EPSG:4326');
+           const clickPoint = point(pixel.lngLat);
+           console.log('clickPoint=', clickPoint);
 
            // Compile a list of clicked on layers
            // NOTO BENE: forEachLayerAtPixel() cannot be used because it causes CORS problems
-           const activeLayers = this.olMapObject.getLayers();
-           const clickedLayerList: olLayer[] = [];
-           const layerColl = map.getLayers();
+           const layerGroups = this.olMapObject.getLayerGroups();
+           console.log('layerGroups=', layerGroups);
+           const clickedLayerList = [];
+           const layerColl = map.getStyle().layers;
            const me = this;
            layerColl.forEach(function(layer) {
-               for (const layerId in activeLayers) {
-                   for (const activeLayer of activeLayers[layerId]) {
+               for (const layerId in layerGroups) {
+                   for (const activeLayer of layerGroups[layerId]) {
                        if (layer === activeLayer) {
                            const layerModel = me.getLayerModel(layerId);
                            if (!me.layerHandlerService.containsWMS(layerModel)) {
@@ -88,20 +99,20 @@ export class OlMapService {
            }, me);
 
            // Compile a list of clicked on features
-           const clickedFeatureList: olFeature[] = [];
-           const featureHit = map.forEachFeatureAtPixel(pixel, function(feature) {
+           const clickedFeatureList = [];
+           /*const featureHit = map.forEachFeatureAtPixel(pixel, function(feature) {
               // LJ: skip the olFeature
               if (feature.get('bClipboardVector')) {
                 return;
               }
               clickedFeatureList.push(feature);
-           });
+           });*/
 
            this.clickedLayerListBS.next({
              clickedFeatureList: clickedFeatureList,
              clickedLayerList: clickedLayerList,
              pixel: pixel,
-             clickCoord: clickCoord
+             clickCoord: pixel.lngLat
            });
       } catch (error) {
         throw error;
@@ -118,13 +129,13 @@ export class OlMapService {
   public getCSWRecordsForExtent(extent: olExtent): CSWRecordModel[] {
     let intersectedCSWRecordList: CSWRecordModel[] = [];
     extent = olProj.transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
-    const activeLayers = this.olMapObject.getLayers();
+    const layerGroups = this.olMapObject.getLayerGroups();
     const map = this.olMapObject.getMap();
-    const mapLayerColl = map.getLayers();
+    const mapLayerColl = map.getStyle().layers;
     const me = this;
     mapLayerColl.forEach(function(layer) {
-       for (const layerId in activeLayers) {
-           for (const activeLayer of activeLayers[layerId]) {
+       for (const layerId in layerGroups) {
+           for (const activeLayer of layerGroups[layerId]) {
                if (layer === activeLayer) {
                    const layerModel = me.getLayerModel(layerId);
                    /*
@@ -215,6 +226,7 @@ export class OlMapService {
    * @param layer the layer to remove from the map
    */
   public removeLayer(layer: LayerModel): void {
+      console.log('removeLayer');
       this.manageStateService.removeLayer(layer.id);
       this.olMapObject.removeLayerById(layer.id);
       delete this.layerModelList[layer.id];
@@ -287,21 +299,7 @@ export class OlMapService {
    * @param extent An array of numbers representing an extent: [minx, miny, maxx, maxy]
    */
   public fitView(extent: [number, number, number, number]): void {
-      this.olMapObject.getMap().getView().fit(extent);
-  }
-
-  /**
-   * Zoom the map in one level
-   */
-  public zoomMapIn(): void {
-    this.olMapObject.zoomIn();
-  }
-
-  /**
-   * Zoom the map out one level
-   */
-  public zoomMapOut(): void {
-    this.olMapObject.zoomOut();
+      // this.olMapObject.getMap().getView().fit(extent);
   }
 
   /**
@@ -364,8 +362,8 @@ export class OlMapService {
    * Change the OL Map's basemap
    * @param baseMap the basemap's ID value (string)
    */
-  public switchBaseMap(baseMap: string) {
+  /*public switchBaseMap(baseMap: string) {
     this.olMapObject.switchBaseMap(baseMap);
-  }
+  }*/
 
 }

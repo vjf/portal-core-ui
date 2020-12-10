@@ -70,7 +70,7 @@ export class OlCSWService {
        feature.layer = layer;
     // VT: we chose the first layer in the array based on the assumption that we only create a single vector
     // layer for each wfs layer. WMS may potentially contain more than 1 layer in the array. note the difference
-    (<olLayerVector>this.olMapObject.getLayerById(layer.id)[0]).getSource().addFeature(feature);
+    (<olLayerVector>this.olMapObject.getLayerGroupById(layer.id)[0]).getSource().addFeature(feature);
     if (!OlCSWService.cswDiscoveryRendered.includes(feature.layer.id)) {
       OlCSWService.cswDiscoveryRendered.push(layer.id);
     }
@@ -106,7 +106,7 @@ export class OlCSWService {
     feature.cswRecord = cswRecord;
     feature.layer = layer;
 
-    (<olLayerVector>this.olMapObject.getLayerById(layer.id)[0]).getSource().addFeature(feature);
+    (<olLayerVector>this.olMapObject.getLayerGroupById(layer.id)[0]).getSource().addFeature(feature);
     if (!OlCSWService.cswDiscoveryRendered.includes(feature.layer.id)) {
       OlCSWService.cswDiscoveryRendered.push(layer.id);
     }
@@ -121,7 +121,7 @@ export class OlCSWService {
     const cswRecords = this.layerHandlerService.getCSWRecord(layer);
 
     // VT: create the vector on the map if it does not exist.
-    if (!this.olMapObject.getLayerById(layer.id)) {
+    if (!this.olMapObject.getLayerGroupById(layer.id)) {
         const markerLayer = new olLayerVector({
                     source: new olSourceVector({ features: []})
                 });

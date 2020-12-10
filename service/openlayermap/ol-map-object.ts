@@ -2,21 +2,21 @@ import {RenderStatusService} from './renderstatus/render-status.service';
 import {Constants} from '../../utility/constants.service';
 import { UtilitiesService } from '../../utility/utilities.service';
 import {Injectable , Inject} from '@angular/core';
-import olMap from 'ol/Map';
-import olTile from 'ol/layer/Tile';
-import olOSM from 'ol/source/OSM';
-import olView from 'ol/View';
+//import olMap from 'ol/Map';
+//import olTile from 'ol/layer/Tile';
+//import olOSM from 'ol/source/OSM';
+//import olView from 'ol/View';
 import olLayer from 'ol/layer/Layer';
 import olSourceVector from 'ol/source/Vector';
 import olFormatGML2 from 'ol/format/GML2';
 import olLayerVector from 'ol/layer/Vector';
-import XYZ from 'ol/source/XYZ';
-import TileLayer from 'ol/layer/Tile';
+//import XYZ from 'ol/source/XYZ';
+//import TileLayer from 'ol/layer/Tile';
 import olGeomPolygon from 'ol/geom/Polygon';
 import { fromExtent } from 'ol/geom/Polygon';
-import BingMaps from 'ol/source/BingMaps';
+//import BingMaps from 'ol/source/BingMaps';
 import olDraw, { createBox } from 'ol/interaction/Draw';
-import olControl from 'ol/control';
+//import olControl from 'ol/control';
 import olStyleStyle from 'ol/style/Style';
 import olStyleCircle from 'ol/style/Circle';
 import olStyleFill from 'ol/style/Fill';
@@ -27,8 +27,10 @@ import * as olExtent from 'ol/extent';
 import * as olEasing from 'ol/easing';
 import {unByKey} from 'ol/Observable';
 import { Subject , BehaviorSubject} from 'rxjs';
-import * as G from 'ol-geocoder';
+//import * as G from 'ol-geocoder';
 import {getVectorContext} from 'ol/render';
+
+import { Map } from 'mapbox-gl';
 
 export interface BaseMapLayerOption {
   value: string;
@@ -44,18 +46,20 @@ export interface BaseMapLayerOption {
 @Injectable()
 export class OlMapObject {
 
-  private map: olMap;
-  private activeLayer: {};
+  private map: Map;
+  private layerGroup: {};
   private clickHandlerList: ((p: any) => void )[] = [];
   private ignoreMapClick = false;
   private baseLayers = [];
   private baseMapLayers = [{ value: 'OSM', viewValue: 'OpenStreetMap', layerType: 'OSM' }];
 
+  private cbList: { [key: string]: any } = {};
+
   constructor(private renderStatusService: RenderStatusService, @Inject('env') private env) {
     if (env !== null) {
       this.baseMapLayers = env.baseMapLayers;
     }
-    for (let i = 0; i < this.baseMapLayers.length; ++i) {
+    /*for (let i = 0; i < this.baseMapLayers.length; ++i) {
       if ( this.baseMapLayers[i].layerType === 'OSM') {
         this.baseLayers.push(new olTile({
           visible: true,
@@ -92,20 +96,12 @@ export class OlMapObject {
           })
         }));
       }
-    }
-    this.activeLayer = {};
-    this.map = new olMap({
-      controls: [],
-      layers: this.baseLayers,
-      view: new olView({
-        center: Constants.CENTRE_COORD,
-        zoom: 4
-      })
-    });
+    }*/
+    this.layerGroup = {};
     const me = this;
 
     // Call a list of functions when the map is clicked on
-    this.map.on('click', function(evt) {
+    /*this.map.on('click', function(evt) {
       if (me.ignoreMapClick) {
         return;
       }
@@ -113,60 +109,27 @@ export class OlMapObject {
       for (const clickHandler of me.clickHandlerList) {
         clickHandler(pixel);
       }
-    });
-
-  }
-public addGeocoderToMap() {
-      // Added ol-geocoder controller into map.
-      const GC = new  G('nominatim', {
-        provider: 'bing',
-        key: 'AgfoWboIfoy68Vu38c2RE83rEEuvWKjQWV37g7stRUAPcDiGALCEKHefrDyWn1zM',
-        lang: 'en',
-        placeholder: 'search',
-        limit: 5,
-        autoComplete: true,
-        keepOpen: true
-      });
-      const geocoderSource = GC.getSource();
-      const me = this;
-      GC.on('addresschosen', function (evt) {
-        const coord = evt.coordinate;
-        if (coord) {
-          geocoderSource.clear();
-          geocoderSource.addFeature(evt.feature); // add only the last one
-          me.map.getView().setCenter(coord);
-          me.map.getView().setZoom(9);
-        }
-      });
-      this.map.addControl(GC);
-  }
-
-  public switchBaseMap(newstyle: string): void {
-      for (let i = 0; i < this.baseLayers.length; ++i) {
-        this.baseLayers[i].setVisible(this.baseMapLayers[i].value === newstyle);
-        if (this.baseMapLayers[i].value === 'World_Imagery' && newstyle === 'Reference/World_Boundaries_and_Places') {
-          this.baseLayers[i].setVisible(true);
-        }
-      }
+    });*/
 
   }
 
-  public addControlToMap(control: olControl) {
-    this.map.addControl(control);
+
+  public setMap(map: Map) {
+    this.map = map;
   }
 
   /**
    * Register a click handler callback function which is called when there is a click event
    * @param clickHandler callback function, input parameter is the pixel coords that were clicked on
    */
-  public registerClickHandler( clickHandler: (p: number[]) => void) {
+  /*public registerClickHandler( clickHandler: (p: number[]) => void) {
       this.clickHandlerList.push(clickHandler);
-  }
+  }*/
 
   /**
    * returns an instance of the ol map
    */
-  public getMap(): olMap {
+  public getMap(): Map {
     return this.map;
   }
 
@@ -174,14 +137,31 @@ public addGeocoderToMap() {
    * Zoom the map in one level
    */
   public zoomIn(): void {
-    this.map.getView().setZoom(this.map.getView().getZoom() + 1);
+    // this.map.getView().setZoom(this.map.getView().getZoom() + 1);
   }
 
   /**
    * Zoom the map out one level
    */
   public zoomOut(): void {
-    this.map.getView().setZoom(this.map.getView().getZoom() - 1);
+    // this.map.getView().setZoom(this.map.getView().getZoom() - 1);
+  }
+
+  
+  public setEvent(type: string, evt: any) {
+    if (this.cbList[type]) {
+      for (const cb of this.cbList[type]) {
+        cb(evt);
+     }
+    }
+  }
+
+
+  public registerForEvent(type: string, cb: (any) => void) {
+      if (!this.cbList.hasOwnProperty(type)) {
+        this.cbList[type] = []
+      }
+      this.cbList[type].push(cb);
   }
 
   /**
@@ -189,9 +169,9 @@ public addGeocoderToMap() {
    * @param layer: the ol layer to add to map
    * @param id the layer id is used
    */
-  public addLayerById(layer: olLayer, id: string): void {
-    if (!this.activeLayer[id]) {
-      this.activeLayer[id] = [];
+  public addLayerById(layer: any, id: string): void {
+    if (!this.layerGroup[id]) {
+      this.layerGroup[id] = [];
     }
     // LJ:skip the polygon search for getFeatureInfo.
     if (layer.sldBody && layer.sldBody.indexOf('<ogc:Intersects>') >= 0)  {
@@ -199,9 +179,9 @@ public addGeocoderToMap() {
       const polygonFilter = UtilitiesService.getPolygonFilter(layer.sldBody);
       layer.sldBody = layer.sldBody.replace(polygonFilter, "");
     }
-    this.activeLayer[id].push(layer);
+    this.layerGroup[id].push(layer);
 
-    this.map.addLayer(layer);
+    // this.map.addLayer(layer);
   }
 
 
@@ -210,34 +190,49 @@ public addGeocoderToMap() {
    * @param id the layer id is used
    * @return the ol layer
    */
-  public getLayerById(id: string): [olLayer] {
-    if (!this.activeLayer[id] || this.activeLayer[id].length === 0) {
+  public getLayerGroupById(id: string): [olLayer] {
+    if (!this.layerGroup[id] || this.layerGroup[id].length === 0) {
       return null;
     }
-    return this.activeLayer[id];
+    return this.layerGroup[id];
   }
 
 
   /**
-   * Get all active layers
+   * Get all layer groups
    */
-  public getLayers(): { [id: string]: [olLayer]} {
-    return this.activeLayer;
+  public getLayerGroups(): { [id: string]: [olLayer]} {
+    return this.layerGroup;
   }
 
 
   /**
-   * remove references to the layer by layer id.
+   * Remove references to the layer by layer id.
    * @param id the layer id is used
    */
   public removeLayerById(id: string) {
-    const activelayers = this.getLayerById(id);
-    if (activelayers) {
-      activelayers.forEach(layer => {
+    /*const layerGroups = this.getLayerById(id);
+    if (layerGroups) {
+      layerGroups.forEach(layer => {
         this.map.removeLayer(layer);
       });
-      delete this.activeLayer[id];
-      this.renderStatusService.resetLayer(id);
+    }*/
+    console.log('removeLayer(', id, ')');
+    console.log('this.layerGroup = ', this.layerGroup);
+    let deleted = false;
+    if (this.layerGroup[id]) {
+      for (const layerInfo of this.layerGroup[id]) {
+        console.log('layerInfo.sourceName = ', layerInfo.sourceName);
+        if (this.map.getLayer(layerInfo.sourceName)) {
+          this.map.removeLayer(layerInfo.sourceName);
+          this.map.removeSource(layerInfo.sourceName);
+          deleted = true;
+        }
+      }
+      if (deleted) {
+        delete this.layerGroup[id];
+        this.renderStatusService.resetLayer(id);
+      }
     }
   }
 
@@ -247,8 +242,8 @@ public addGeocoderToMap() {
    * @param visible if true, the layer will be visible, false will hide the layer
    */
   public setLayerVisibility(layerId: string, visible: boolean) {
-    if (this.getLayerById(layerId) != null) {
-        const layers: [olLayer] = this.getLayerById(layerId);
+    if (this.getLayerGroupById(layerId) != null) {
+        const layers: [olLayer] = this.getLayerGroupById(layerId);
         for (const layer of layers) {
             layer.setVisible(visible);
         }
@@ -262,12 +257,23 @@ public addGeocoderToMap() {
    * @param opacity the value of opacity between 0.0 and 1.0
    */
   public setLayerOpacity(layerId: string, opacity: number) {
-    if (this.getLayerById(layerId) != null) {
+    /*if (this.getLayerById(layerId) != null) {
       const layers: [olLayer] = this.getLayerById(layerId);
       for (const layer of layers) {
         layer.setOpacity(opacity);
       }
+    }*/
+    const layers = this.getLayerGroupById(layerId);
+    if (layers) {
+      for (const layer of layers) {
+        this.map.setPaintProperty(
+          layer.sourceName,
+          'raster-opacity',
+          opacity
+          );
+      }
     }
+    
   }
 
   /**
@@ -276,9 +282,9 @@ public addGeocoderToMap() {
    * @param value the new source parameter value
    */
   public setLayerSourceParam(layerId: string, param: string, value: any) {
-  const activelayers = this.getLayerById(layerId);
-    if (activelayers) {
-      activelayers.forEach(layer => {
+  const layerGroups = this.getLayerGroupById(layerId);
+    if (layerGroups) {
+      layerGroups.forEach(layer => {
         layer.getSource().updateParams({[param]: value});
       });
       this.renderStatusService.resetLayer(layerId);
@@ -297,7 +303,7 @@ public addGeocoderToMap() {
     });
     const vectorBS = new BehaviorSubject<olLayerVector>(vector);
 
-    this.map.addLayer(vector);
+    // this.map.addLayer(vector);
     const draw = new olDraw({
       source: source,
       type: /** @type {ol.geom.GeometryType} */ ('Polygon')
@@ -310,12 +316,12 @@ public addGeocoderToMap() {
       const coordString = coords.join(' ');
       vector.set('polygonString', coordString);
       vectorBS.next(vector);
-      me.map.removeInteraction(draw);
+      // me.map.removeInteraction(draw);
       setTimeout(function() {
         me.ignoreMapClick = false;
       }, 500);
     });
-    this.map.addInteraction(draw);
+    // this.map.addInteraction(draw);
     return vectorBS;
   }
 
@@ -358,7 +364,7 @@ public addGeocoderToMap() {
         style: style
     });
     const vectorBS = new BehaviorSubject<olLayerVector>(vector);
-    this.map.addLayer(vector);
+    // this.map.addLayer(vector);
     return vectorBS;
   }
 
@@ -385,14 +391,14 @@ public addGeocoderToMap() {
     });
     const me = this;
     draw.on('drawend', function() {
-      me.map.removeInteraction(draw);
+      // me.map.removeInteraction(draw);
       setTimeout(function() {
         me.map.removeLayer(vector);
         vectorBS.next(vector);
         me.ignoreMapClick = false;
       }, 500);
     });
-    this.map.addInteraction(draw);
+    // this.map.addInteraction(draw);
     return vectorBS;
   }
 
@@ -457,7 +463,7 @@ public addGeocoderToMap() {
             return;
           }
           // tell OpenLayers to continue postcompose animation
-          me.map.render();
+          // me.map.render();
         }
         listenerKey = vector.on('postrender', animate);
       }
@@ -475,7 +481,7 @@ public addGeocoderToMap() {
    * @returns an olExtent object representing the bounds of the map
    */
   public getMapExtent(): olExtent {
-    return this.map.getView().calculateExtent(this.map.getSize());
+    return null; // this.map.getView().calculateExtent(this.map.getSize());
   }
 
   /**
@@ -492,7 +498,7 @@ public addGeocoderToMap() {
     const vector = new olLayerVector({
       source: source
     });
-    this.map.addLayer(vector);
+    // this.map.addLayer(vector);
     if (duration !== undefined && duration !== -1) {
         setTimeout(() => {
           this.removeVector(vector);
@@ -504,7 +510,7 @@ public addGeocoderToMap() {
    * Remove a vector from the map
    */
   public removeVector(vector: olLayerVector) {
-    this.map.removeLayer(vector);
+    // this.map.removeLayer(vector);
   }
 
   /**
@@ -513,8 +519,8 @@ public addGeocoderToMap() {
    */
   public getCurrentMapState() {
     return {
-      zoom: this.map.getView().getZoom(),
-      center: this.map.getView().getCenter()
+      zoom: null, // this.map.getView().getZoom(),
+      center: null //this.map.getView().getCenter()
     };
   }
 
@@ -524,15 +530,15 @@ public addGeocoderToMap() {
    * @param the state of the map in the format {zoom, center}
    */
   public resumeMapState(mapState) {
-    this.map.getView().setZoom(mapState.zoom);
-    this.map.getView().setCenter(mapState.center);
+    //this.map.getView().setZoom(mapState.zoom);
+    //this.map.getView().setCenter(mapState.center);
   }
 
   /**
    * Call updateSize on the map to handle scale changes
    */
   public updateSize() {
-    this.map.updateSize();
+    //this.map.updateSize();
   }
 
 }

@@ -7,23 +7,24 @@ import { OnlineResourceModel } from '../../model/data/onlineresource.model';
 import { LayerHandlerService } from '../cswrecords/layer-handler.service';
 import { OlMapObject } from '../openlayermap/ol-map-object';
 import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
-import olMap from 'ol/Map';
-import olTile from 'ol/layer/Tile';
-import olTileWMS from 'ol/source/TileWMS';
+//import olMap from 'ol/Map';
+//import olTile from 'ol/layer/Tile';
+//import olTileWMS from 'ol/source/TileWMS';
 import * as olProj from 'ol/proj';
 import * as extent from 'ol/extent';
 import { Constants } from '../../utility/constants.service';
 import { UtilitiesService } from '../../utility/utilities.service';
 import { RenderStatusService } from '../openlayermap/renderstatus/render-status.service';
 import { MinTenemStyleService } from '../style/wms/min-tenem-style.service';
-
+import { Map } from 'mapbox-gl';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Use OlMapService to add layer to map. This service class adds WMS layer to the map
  */
 @Injectable()
 export class OlWMSService {
-  private map: olMap;
+  private map: Map;
   constructor(
     private layerHandlerService: LayerHandlerService,
     private olMapObject: OlMapObject,
@@ -33,7 +34,7 @@ export class OlWMSService {
     @Inject('conf') private conf
 
   ) {
-    this.map = this.olMapObject.getMap();
+    
   }
 
 
@@ -336,7 +337,7 @@ export class OlWMSService {
                 response
               );
 
-          let wmsTile;
+          // let wmsTile;
 
           let defaultExtent;
           if (wmsOnlineResource.geographicElements.length > 0) {
@@ -362,12 +363,12 @@ export class OlWMSService {
               Constants.MAP_PROJ
             );
           } else {
-            defaultExtent = this.map
-              .getView()
-              .calculateExtent(this.map.getSize());
+            defaultExtent = [] // this.map
+              //.getView()
+             // .calculateExtent(this.map.getSize());
           }
 
-          // ArcGIS does not respond to POST requests
+         /* // ArcGIS does not respond to POST requests
           if (!UtilitiesService.isArcGIS(wmsOnlineResource) && this.wmsUrlTooLong(response, layer)) {
             wmsTile = new olTile({
               extent: defaultExtent,
@@ -415,12 +416,54 @@ export class OlWMSService {
             );
           });
 
-          this.olMapObject.addLayerById(wmsTile, layer.id);
+          this.olMapObject.addLayerById(wmsTile, layer.id);*/
+          const sourceName = layer.id + '-' + uuidv4();
+          me.renderStatusService.register(layer, wmsOnlineResource);
+          let resourceLoading = false;
+          const onDataFn: (any) => void = (evt: any) => {
+            if (evt.sourceDataType || (evt.dataType !== 'source' && evt.sourceId !== sourceName)) {
+              return;
+            }
+
+            if (!evt.isSourceLoaded) {
+                console.log("Loading");
+                if (!resourceLoading) {
+                    me.renderStatusService.addResource(layer, wmsOnlineResource);
+                    resourceLoading = true;
+                }
+            } else {
+                console.log("Update complete");
+                me.renderStatusService.updateComplete(layer, wmsOnlineResource);
+            }
+          };
+
+          me.olMapObject.registerForEvent('Data', onDataFn);
+          this.map = this.olMapObject.getMap();
+          const layerName = wmsOnlineResource.name;
+          const wmsUrl = UtilitiesService.rmParamURL(wmsOnlineResource.url)+'?bbox={bbox-epsg-3857}&DISPLAYOUTSIDEMAXEXTENT=true&styles=&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers='+layerName;
+          console.log('sourceNane', sourceName);
+          console.log('wmsUrl', wmsUrl);
+          this.map.addSource(sourceName, {
+            'type': 'raster',
+            'tiles': [
+              wmsUrl
+            // 'https://geoanalytics.it.csiro.au/auscope-community/geoserver/mt/wms?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&transparent=true&width=256&height=256&layers=mt:magnetotelluric'
+            ],
+            'tileSize': 256
+            });
+          this.map.addLayer(
+            {
+            'id': sourceName,
+            'type': 'raster',
+            'source': sourceName,
+            'paint': {}
+            }
+            );
+          this.olMapObject.addLayerById({'sourceName': sourceName}, layer.id);        
         }
       );
     }
   }
-
 
   /**
    * An injected function into Openlayers to proxy the URL *IF* the URL is too long
