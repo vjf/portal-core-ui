@@ -26,7 +26,13 @@ In the project that uses the library (e.g. AuScope-Portal-UI or ngvl):
 
 This creates a symbolic link for node_modules/portal-core-ui that links to the distribution folder of the library project.
 
-Don't forget to unlink when you're no lomger interested in using the development version of the library:
+If you get an obscure 'Unhandled Promise rejection' error you may have to add:
+
+`"preserveSymlinks": true`
+
+to the 'projects'.$name.'architect'.'build'.'options' section in your 'angular.json' file in the project that uses the library.
+
+Don't forget to unlink when you're no longer interested in using the development version of the library:
 
 `npm unlink portal-core-ui`
 
