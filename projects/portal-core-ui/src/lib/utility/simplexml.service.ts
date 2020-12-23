@@ -6,9 +6,11 @@ import { UtilitiesService } from './utilities.service';
 declare var XPath: any;
 declare var ActiveXObject: any;
 declare var window: any;
+
 /**
  * Port over from old portal-core extjs for dealing with xml in wfs
  */
+// @dynamic
 @Injectable()
 export class SimpleXMLService {
 

@@ -77,7 +77,7 @@ export class OlMapService {
                              continue;
                            }
                            const bbox = activeLayer.onlineResource.geographicElements[0];
-                           const poly = bboxPolygon([bbox.eastBoundLongitude, bbox.southBoundLatitude, bbox.westBoundLongitude, bbox.northBoundLatitude]);
+                           const poly = bboxPolygon([bbox.westBoundLongitude, bbox.southBoundLatitude, bbox.eastBoundLongitude, bbox.northBoundLatitude]);
                            if (booleanPointInPolygon(clickPoint, poly) && !clickedLayerList.includes(activeLayer)) {
                              // Add to list of clicked layers
                              clickedLayerList.push(activeLayer);

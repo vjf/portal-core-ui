@@ -3,9 +3,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 
-
-
-
 // Services
 import { LayerHandlerService } from './service/cswrecords/layer-handler.service';
 import { FilterPanelService } from './service/filterpanel/filterpanel-service';
@@ -25,8 +22,6 @@ import { DownloadWcsService } from './service/wcs/download/download-wcs.service'
 import { OlWWWService } from './service/www/ol-www.service';
 import { QueryWMSService} from './service/wms/query-wms.service';
 import { QueryWFSService} from './service/wfs/query-wfs.service';
-
-
 
 // Directives
 import { ImgLoadingDirective } from './uiutilities/imgloading.directive';
@@ -80,13 +75,11 @@ static forRoot(env: any, conf: any): ModuleWithProviders<PortalCoreModule> {
     };
   }
 
-  constructor (@Optional() @SkipSelf() parentModule: PortalCoreModule) {
+  constructor(@Optional() @SkipSelf() parentModule: PortalCoreModule) {
     if (parentModule) {
       throw new Error(
         'CoreModule is already loaded. Import it in the AppModule only');
     }
   }
-
-
 
 }

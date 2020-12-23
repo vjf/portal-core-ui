@@ -8,11 +8,13 @@ import { LayerHandlerService } from '../../cswrecords/layer-handler.service';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, Inject } from '@angular/core';
 import * as $ from 'jquery';
+
 declare var gtag: Function;
 
 /**
  * Use OlMapService to add layer to map. This service class adds wfs layer to the map
  */
+// @dynamic
 @Injectable()
 export class DownloadWfsService {
 

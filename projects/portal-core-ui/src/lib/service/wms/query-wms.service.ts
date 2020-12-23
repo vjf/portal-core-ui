@@ -65,7 +65,6 @@ export class QueryWMSService {
   * @return Observable the observable from the http request
    */
   public getFeatureInfo(onlineResource: OnlineResourceModel, sldBody: string, pixel: string[], clickCoord: any[]): Observable<any> {
-    console.log('onlineResource = ', onlineResource);
     let formdata = new HttpParams();
     formdata = formdata.append('serviceUrl', UtilitiesService.rmParamURL(onlineResource.url));
     formdata = formdata.append('lat', clickCoord[1]);
